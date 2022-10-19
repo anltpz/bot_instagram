@@ -133,7 +133,7 @@ class AccountPage(BasePage):
        
        
     def get_following(self):
-        # AccountPage.scroll_down(self)
+        AccountPage.scroll_down(self)
         following = self.find_elements(self.get_following_list)
         sayac =0
         for i in following:
@@ -178,12 +178,16 @@ class AccountPage(BasePage):
 
             
         
-                      
+print("Program başladı")   
+
+kullanici_adi = input("Kullanici adi giriniz : ")
+sifre = input("Sifre giriniz : ")
+
 testdriver = webdriver.Chrome(ChromeDriverManager().install())
 login = Login(testdriver)
 accountPage=AccountPage(testdriver)
 #aanltpuz
-login.login(USERNAME,PASSWORD)
+login.login(kullanici_adi,sifre)
 accountPage.click_save_your_login_info()
 accountPage.click_turn_on_notifications()
 sleep(2)
