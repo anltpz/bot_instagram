@@ -11,6 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 #keys 
 import json
 from user_info import USERNAME, PASSWORD
+import getpass
 
 
 users = set()
@@ -181,8 +182,7 @@ class AccountPage(BasePage):
 print("Program başladı")   
 
 kullanici_adi = input("Kullanici adi giriniz : ")
-sifre = input("Sifre giriniz : ")
-
+sifre =getpass.getpass("Sifre giriniz:")
 testdriver = webdriver.Chrome(ChromeDriverManager().install())
 login = Login(testdriver)
 accountPage=AccountPage(testdriver)
