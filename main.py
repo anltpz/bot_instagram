@@ -176,9 +176,7 @@ class AccountPage(BasePage):
             json.dump(liste,open("info.json","w"))
             print("Bitti")
 
-
-            
-        
+     
 print("Program başladı")   
 
 kullanici_adi = input("Kullanici adi giriniz : ")
