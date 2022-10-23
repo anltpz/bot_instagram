@@ -1,4 +1,6 @@
 
+from lib2to3.pgen2 import driver
+from re import S
 from time import sleep, time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -18,15 +20,9 @@ users = set()
 following_list = set()
 #dictionary
 class BasePage:
-    total_followers = (By.XPATH,"//header/section/ul/li[2]/a/div/span")
-    total_post = (By.XPATH,"//header/section/ul/li[1]/div/span")
-    total_following = (By.XPATH,"//header/section/ul/li[3]/a/div/span")
+    
+    user_name=(By.XPATH,"//header/section/div[1]")
 
-    private_total_post = (By.XPATH,"//ul[@class=\"x78zum5 x1q0g3np xieb3on\"/li[1]//span")
-    private_total_followers = (By.XPATH,"//ul[@class=\"x78zum5 x1q0g3np xieb3on\"]/li[2]//span")
-    private_total_following = (By.XPATH,"//ul[@class=\"x78zum5 x1q0g3np xieb3on\"]/li[3]//span")
-
-  
 
     def __init__(self,driver=webdriver):
         self.driver =driver
@@ -62,9 +58,6 @@ class BasePage:
     def wait_for_invisibility(self,locator):
         return WebDriverWait(self.driver,10).until(EC.invisibility_of_element_located(locator))
 
-   
-
-    
 class Login(BasePage):
 
     def __init__(self,driver,url="https://www.instagram.com/"):
@@ -72,7 +65,7 @@ class Login(BasePage):
         self.driver.get(url)
         self.username = (By.XPATH,"//input[@name='username']")
         self.password = (By.XPATH,"//input[@name='password']")
-        self.login_button = (By.XPATH,"//div[contains(text(),'Log In')]")
+        self.login_button = (By.XPATH,"//div[contains(text(),'Log in')]")
 
     def login(self,username,password):
         sleep(2)
@@ -84,8 +77,14 @@ class HomePage(BasePage):
     def __init__(self,driver):
         super().__init__(driver)
         self.profile = (By.XPATH,"//div[@class='profile']")
+        self.save_your_login_info = (By.XPATH,"//div[@class='_ac8f']") 
+        self.turn_on_notifications = (By.XPATH,"""//div[@class="_a9-z"]/button[2]""")
+        
+    def click_save_your_login_info(self):
+        self.wait_for_clickable(self.save_your_login_info).click()
 
-    
+    def click_turn_on_notifications(self):
+        self.wait_for_clickable(self.turn_on_notifications).click()
 
 class AccountPage(BasePage):
 
@@ -93,12 +92,13 @@ class AccountPage(BasePage):
         super().__init__(driver)
         sleep(3)
         self.profile = (By.CLASS_NAME,"""_aarf _aak0""")
-        self.save_your_login_info = (By.XPATH,"//div[@class='_ac8f']") 
-        self.turn_on_notifications = (By.XPATH,"""//div[@class="_a9-z"]/button[2]""")
-        self.get_followers_list = (By.XPATH,"//div[@class=\"_ab8w  _ab94 _ab99 _ab9f _ab9k _ab9p _abcm\"]/span/a")
+        self.profile_status=(By.XPATH,"//section/ul/li")  
+
+       
        
         self.dialog = (By.CSS_SELECTOR,"div[role=dialog")
         self.get_following_list = (By.XPATH,"//div[@class=\"_ab8w  _ab94 _ab99 _ab9f _ab9k _ab9p _abcm\"]/span/a")
+        self.get_followers_list = (By.XPATH,"//div[@class=\"_ab8w  _ab94 _ab99 _ab9f _ab9k _ab9p _abcm\"]/span/a")
 
     def scroll_down(self):
         js_code="""
@@ -116,24 +116,11 @@ class AccountPage(BasePage):
                 break
 
                 
-    def click_save_your_login_info(self):
-        self.wait_for_clickable(self.save_your_login_info).click()
+    
 
-    def click_turn_on_notifications(self):
-        self.wait_for_clickable(self.turn_on_notifications).click()
-
-    def get_followers(self):
-       AccountPage.scroll_down(self)
-       follower=  self.find_elements(self.get_followers_list)
-       sayac =0
-       for i in follower:
-           self.followersList.add(i.text)
-           sayac+=1
-           print("followers sayısı: ",sayac)
-       print(self.followersList)
+    
        
-       
-    def get_following(self):
+    def get_following_count(self):
         AccountPage.scroll_down(self)
         following = self.find_elements(self.get_following_list)
         sayac =0
@@ -141,65 +128,126 @@ class AccountPage(BasePage):
             i = i.text.replace("\nVerified","")
             self.followingList.add(i)
             sayac+=1
+        
         print("following sayisi: ",sayac)
+        
         print(self.followingList)
 
+   
+    def  get_followers_count(self):
+        AccountPage.scroll_down(self)
+        followers = self.find_elements(self.get_followers_list)
+        sayac =0
+        for i in followers:
+            i = i.text.replace("\nVerified","")
+            self.followersList.add(i)
+            sayac+=1
+        print("Followers sayisi: ",sayac)
+        print(self.followersList)
     
+    def get_dont_follow_me(self):
+        for  i  in self.followingList:
+            if i not in self.followersList:
+                print("Dont follow me: ",i)
 
-    def get_info_following_info(self):
+            
         
-        liste=[]
+    
+    
+    def get_info_following_list(self):
+        
+        following_liste=[]
         try:
             for i in self.followingList:
              self.driver.get("https://www.instagram.com/{}".format(i)) 
+
              sleep(3)
-             total_followers= self.find_element(AccountPage.total_followers).text
-             total_following = self.find_element(AccountPage.total_following).text
-             total_post = self.find_element(AccountPage.total_post).text
-             print("Followers: ",total_followers)
-             print("Following: ",total_following)
-             print("Post: ",total_post)
-             print("**********************")
-             obj = {
-                    "name":i,
-                    "Followers": total_followers,
-                    "Following": total_following,
-                    "Post": total_post
+             username= self.find_element(self.user_name)
+             name_user=username.text.split("\n")
+             objec={}
+             name={}
+             status_info = self.find_elements(self.profile_status)
+             for i in status_info:
+                 liss=i.text.split(" ")
+                 objec[liss[1]]=liss[0]
+                 name={
+                        name_user[0]:objec
                  }
-                
-             liste.append(obj)
-            # dict[i] =f"data: Followers:{total_followers}",f"Following:{total_following}",f"Post:{total_post}"
+             following_liste.append(name)
+             print(name)
             
         except  NoSuchElementException:
              print("Hesap private")
         finally:
-            json.dump(liste,open("info.json","w"))
+            json.dump(following_liste,open("info.json","w"))
+            print("Bitti")
+
+   
+    def  get_info_followers_list(self):
+        
+        followers_list=[]
+        try:
+            for i in self.followingList:
+             self.driver.get("https://www.instagram.com/{}".format(i)) 
+
+             sleep(3)
+             username= self.find_element(self.user_name)
+             name_user=username.text.split("\n")
+             objec={}
+             name={}
+             status_info = self.find_elements(self.profile_status)
+             for i in status_info:
+                 liss=i.text.split(" ")
+                 objec[liss[1]]=liss[0]
+                 name={
+                        name_user[0]:objec
+                 }
+             followers_list.append(name)
+             print(name)
+            
+        except  NoSuchElementException:
+             print("Hesap private")
+        finally:
+            json.dump(followers_list,open("followers.json","w"))
             print("Bitti")
 
      
 print("Program başladı")   
 
-kullanici_adi = input("Kullanici adi giriniz : ")
-sifre =getpass.getpass("Sifre giriniz:")
+# kullanici_adi = input("Kullanici adi giriniz : ")
+# sifre =getpass.getpass("Sifre giriniz:")
 testdriver = webdriver.Chrome(ChromeDriverManager().install())
 login = Login(testdriver)
 accountPage=AccountPage(testdriver)
-#aanltpuz
-login.login(kullanici_adi,sifre)
-accountPage.click_save_your_login_info()
-accountPage.click_turn_on_notifications()
-sleep(2)
-# testdriver.get("https://www.instagram.com/leomessi/followers/")
-
-# sleep(10)
-# accountPage.get_followers()
-# sleep(10)
-testdriver.get("https://www.instagram.com/anltpzz/following/")
+homePage=HomePage(testdriver)
+login.login(USERNAME,PASSWORD)
 sleep(3)
-accountPage.get_following()
-sleep(3)
-accountPage.get_info_following_info()
+homePage.click_save_your_login_info()
+homePage.click_turn_on_notifications()
+def  json_followers_data(account_name):
+    testdriver.get("https://www.instagram.com/{}/followers".format(account_name))
+    sleep(3)
+    accountPage.get_following_count()
+    sleep(3)
+    accountPage.get_info_followers_list()
+    
 
+def  json_following_data():
+    accountPage.get_info_following_list()
+    sleep(3)
+def  dont_follow_me_list():
+
+    testdriver.get("https://www.instagram.com/anltpzz/following/")
+    sleep(3)
+    accountPage.get_following_count()
+
+    # accountPage.get_info_following_list()
+    testdriver.get("https://www.instagram.com/anltpzz/followers/")
+    sleep(3)
+    accountPage.get_info_followers_list()
+
+json_followers_data("anltpzz")
+dont_follow_me_list()
 
 
 
