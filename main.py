@@ -12,7 +12,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 #keys 
 import json
-from user_info import USERNAME, PASSWORD
 import getpass
 
 
@@ -214,13 +213,14 @@ class AccountPage(BasePage):
      
 print("Program başladı")   
 
-# kullanici_adi = input("Kullanici adi giriniz : ")
-# sifre =getpass.getpass("Sifre giriniz:")
+kullanici_adi = input("Kullanici adi giriniz : ")
+sifre =getpass.getpass("Sifre giriniz:")
 testdriver = webdriver.Chrome(ChromeDriverManager().install())
 login = Login(testdriver)
 accountPage=AccountPage(testdriver)
 homePage=HomePage(testdriver)
-login.login(USERNAME,PASSWORD)
+
+login.login(kullanici_adi,sifre)
 sleep(3)
 homePage.click_save_your_login_info()
 homePage.click_turn_on_notifications()
