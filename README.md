@@ -1,0 +1,5 @@
+# start app
+```
+make install
+
+```
