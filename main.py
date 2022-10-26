@@ -31,7 +31,9 @@ class BasePage:
 
 
     def find_element(self,locator):
+
         return self.driver.find_element(*locator)
+            
 
     def find_elements(self,locator):
         return self.driver.find_elements(*locator)
@@ -41,7 +43,6 @@ class BasePage:
 
     def send_keys(self,locator,text):
         self.find_element(locator).send_keys(text)
-
     def get_text(self,locator):
         return self.find_element(locator).text
 
@@ -109,16 +110,13 @@ class AccountPage(BasePage):
         sayfaSonu=self.driver.execute_script(js_code)
         while True:
             son =sayfaSonu
-            sleep(3)
+            sleep(2)
             sayfaSonu=self.driver.execute_script(js_code)
             if son == sayfaSonu:
+                
                 break
 
                 
-    
-
-    
-       
     def get_following_count(self):
         AccountPage.scroll_down(self)
         following = self.find_elements(self.get_following_list)
@@ -147,12 +145,13 @@ class AccountPage(BasePage):
     def get_dont_follow_me(self):
         for  i  in self.followingList:
             if i not in self.followersList:
-                print("Dont follow me: ",i)
+                print("Seni takip etmeyenler: ",i)
+                
+    def get_dont_follow_it(self):
+        for  i  in self.followersList:
+            if i not in self.followingList:
+                print("Senin takip etmediklerin: ",i)
 
-            
-        
-    
-    
     def get_info_following_list(self):
         
         following_liste=[]
@@ -181,7 +180,7 @@ class AccountPage(BasePage):
             json.dump(following_liste,open("info.json","w"))
             print("Bitti")
 
-   
+    
     def  get_info_followers_list(self):
         
         followers_list=[]
@@ -212,42 +211,76 @@ class AccountPage(BasePage):
 
      
 print("Program başladı")   
-
-kullanici_adi = input("Kullanici adi giriniz : ")
-sifre =getpass.getpass("Sifre giriniz:")
 testdriver = webdriver.Chrome(ChromeDriverManager().install())
 login = Login(testdriver)
 accountPage=AccountPage(testdriver)
 homePage=HomePage(testdriver)
+def start():
+    kullanici_adi = input("Kullanici adi giriniz : ")
+    sifre =getpass.getpass("Sifre giriniz:")
+    login.login(kullanici_adi,sifre)
+    sleep(3)
+    homePage.click_save_your_login_info()
+    homePage.click_turn_on_notifications()
 
-login.login(kullanici_adi,sifre)
-sleep(3)
-homePage.click_save_your_login_info()
-homePage.click_turn_on_notifications()
-def  json_followers_data(account_name):
-    testdriver.get("https://www.instagram.com/{}/followers".format(account_name))
-    sleep(3)
-    accountPage.get_following_count()
-    sleep(3)
+def  json_followers_data():
+    # testdriver.get("https://www.instagram.com/{}/followers".format(account_name))
+    # sleep(3)
+    # accountPage.get_following_count()
+    # sleep(3)
+    # accountPage.get_info_followers_list()
     accountPage.get_info_followers_list()
+    sleep(3)
     
 
 def  json_following_data():
     accountPage.get_info_following_list()
     sleep(3)
-def  dont_follow_me_list():
 
-    testdriver.get("https://www.instagram.com/anltpzz/following/")
+    
+def  dont_follow_me_list(user_name):
+
+    testdriver.get(f"https://www.instagram.com/{user_name}/following/")
     sleep(3)
-    accountPage.get_following_count()
-
+    accountPage.get_following_count() # following liste ekleme yapıyor
+    sleep(3)
     # accountPage.get_info_following_list()
-    testdriver.get("https://www.instagram.com/anltpzz/followers/")
+    testdriver.get(f"https://www.instagram.com/{user_name}/followers/")
     sleep(3)
-    accountPage.get_info_followers_list()
+    accountPage.get_followers_count()
 
-json_followers_data("anltpzz")
-dont_follow_me_list()
+    accountPage.get_dont_follow_me()
+    accountPage.get_dont_follow_it()
+
+def  run():
+    while True:
+        print("""
+        1- Takipçilerinizi json olarak kaydetmek için 1'e basınız
+        2- Takip ettiklerinizi json olarak kaydetmek için 2'ye basınız
+        3- Seni takip etmeyenler  için 3'e basınız
+        4- Çıkış için 4'e basınız
+        """)
+        secim = input("Seçiminiz : ")
+        if secim == "1":
+            json_followers_data()
+        elif secim == "2":
+            json_following_data()
+        elif secim == "3":
+            user_name = input("User name  giriniz : ")
+            dont_follow_me_list(user_name)
+        elif secim == "4":
+            print("Çıkış yapılıyor...")
+            testdriver.quit()
+            exit()
+        else:
+            print("Yanlış seçim yaptınız...")
+            run()
+
+# json_followers_data("anltpzz")
+if __name__ == "__main__":
+    start()
+    run()
+    
 
 
 

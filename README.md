@@ -2,4 +2,5 @@
 ```
 make install
 
+make run
 ```
