@@ -1,16 +1,12 @@
 
-from lib2to3.pgen2 import driver
-from re import S
-from time import sleep, time
+from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
-#action chains
-from selenium.webdriver.common.action_chains import ActionChains
-#keys 
+
 import json
 import getpass
 
@@ -110,7 +106,7 @@ class AccountPage(BasePage):
         sayfaSonu=self.driver.execute_script(js_code)
         while True:
             son =sayfaSonu
-            sleep(2)
+            sleep(3)
             sayfaSonu=self.driver.execute_script(js_code)
             if son == sayfaSonu:
                 
@@ -243,11 +239,12 @@ def  dont_follow_me_list(user_name):
     testdriver.get(f"https://www.instagram.com/{user_name}/following/")
     sleep(3)
     accountPage.get_following_count() # following liste ekleme yapıyor
-    sleep(3)
+    sleep(5)
     # accountPage.get_info_following_list()
     testdriver.get(f"https://www.instagram.com/{user_name}/followers/")
     sleep(3)
     accountPage.get_followers_count()
+    sleep(3)
 
     accountPage.get_dont_follow_me()
     accountPage.get_dont_follow_it()
